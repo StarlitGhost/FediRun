@@ -51,7 +51,6 @@ class FediRun(PineappleBot):
         ret = res[16:].split(delim)
         count = len(ret) >> 1
         returned, errors = ret[:count], ret[count:]
-        errors = errors[0].decode('utf-8', 'ignore')
 
         return returned, errors
 
