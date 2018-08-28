@@ -1,8 +1,10 @@
 from ananas import PineappleBot, reply
 from bs4 import BeautifulSoup
 import requests
+from pyxdameraulevenshtein import normalized_damerau_levenshtein_distance as ndld
 
 import zlib
+from typing import List
 
 
 class FediRun(PineappleBot):
@@ -20,12 +22,18 @@ class FediRun(PineappleBot):
 
         returned, errors = self._tio(language, code)
 
-        returned = [r.decode('utf-8', 'ignore') for r in returned]
-        errors = [e.decode('utf-8', 'ignore') for e in errors]
-        return_str = '\n'.join(returned)
-        self._send_reply('@{} {}'.format(username, return_str), status)
+        response = '@{} {}'.format(username, returned)
+        if errors:
+            response += '\nError: {}'.format(errors)
+
+        self._send_reply(response, status)
 
     def _tio(self, language, code, user_input=''):
+        if language not in self.languages:
+            lang_list = self._closest_matches(language, self.languages, 10, 0.8)
+            lang_string = ", ".join(lang_list)
+            return ["[Language {!r} unknown on tio.run. Perhaps you want: {}]".format(language, lang_string)], []
+
         request = [{'command': 'V', 'payload': {'lang': [language]}},
                    {'command': 'F', 'payload': {'.code.tio': code}},
                    {'command': 'F', 'payload': {'.input.tio': user_input}},
@@ -51,8 +59,28 @@ class FediRun(PineappleBot):
         ret = res[16:].split(delim)
         count = len(ret) >> 1
         returned, errors = ret[:count], ret[count:]
+        returned = [r.decode('utf-8', 'ignore') for r in returned]
+        errors = [e.decode('utf-8', 'ignore') for e in errors]
 
-        return returned, errors
+        return_str = '\n'.join(returned)
+        error_str = '\n'.join(errors)
+
+        return return_str, error_str
+
+    def start(self):
+        self.languages = self._fetch_languages()
+
+    def _fetch_languages(self):
+        self.log("_fetch_languages", "Loading language list from TryItOnline...")
+        lang_url = "https://raw.githubusercontent.com/TryItOnline/tryitonline/master/usr/share/tio.run/languages.json"
+        response = requests.get(lang_url)
+        return response.json().keys()
+
+    def _closest_matches(self, search: str, word_list: List[str], num_matches: int, threshold: float) -> List[str]:
+        similarities = sorted([(ndld(search, word), word) for word in word_list])
+        close_matches = [word for (diff, word) in similarities if diff <= threshold]
+        top_n = close_matches[:num_matches]
+        return top_n
 
     def _send_reply(self, response, original):
         self.mastodon.status_post(response,
