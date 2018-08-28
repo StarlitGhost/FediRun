@@ -34,14 +34,16 @@ class FediRun(PineappleBot):
         self._send_reply(response, status)
 
     def _tio(self, language, code, user_input=''):
-        if language not in self.languages:
-            lang_list = self._closest_matches(language, self.languages, 10, 0.8)
+        if language.lower() in self.languages_friendly:
+            language = self.languages_friendly[language.lower()]
+        if language.lower() not in self.languages.keys():
+            lang_list = self._closest_matches(language.lower(), self.languages.keys(), 10, 0.8)
             lang_string = "\n".join(lang_list)
             return ("", "language {!r} is unknown on tio.run.\n".format(language) +
                     "Perhaps you wanted one of these?\n\n" +
                     "{}".format(lang_string))
 
-        request = [{'command': 'V', 'payload': {'lang': [language]}},
+        request = [{'command': 'V', 'payload': {'lang': [language.lower()]}},
                    {'command': 'F', 'payload': {'.code.tio': code}},
                    {'command': 'F', 'payload': {'.input.tio': user_input}},
                    {'command': 'RC'}]
@@ -76,12 +78,13 @@ class FediRun(PineappleBot):
 
     def start(self):
         self.languages = self._fetch_languages()
+        self.languages_friendly = {d['name'].lower(): l for l, d in self.languages}
 
     def _fetch_languages(self):
         self.log("_fetch_languages", "Loading language list from TryItOnline...")
         lang_url = "https://raw.githubusercontent.com/TryItOnline/tryitonline/master/usr/share/tio.run/languages.json"
         response = requests.get(lang_url)
-        return response.json().keys()
+        return response.json()
 
     def _closest_matches(self, search: str, word_list: List[str], num_matches: int, threshold: float) -> List[str]:
         similarities = sorted([(ndld(search, word), word) for word in word_list])
