@@ -32,9 +32,9 @@ class FediRun(PineappleBot):
         if language not in self.languages:
             lang_list = self._closest_matches(language, self.languages, 10, 0.8)
             lang_string = "\n".join(lang_list)
-            return ("", "language {!r} is unknown on tio.run.\n" +
+            return ("", "language {!r} is unknown on tio.run.\n".format(language) +
                     "Perhaps you wanted one of these?\n\n" +
-                    "{}".format(language, lang_string))
+                    "{}".format(lang_string))
 
         request = [{'command': 'V', 'payload': {'lang': [language]}},
                    {'command': 'F', 'payload': {'.code.tio': code}},
