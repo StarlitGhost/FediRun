@@ -23,7 +23,7 @@ class FediRun(PineappleBot):
         returned = [r.decode('utf-8', 'ignore') for r in returned]
         errors = [e.decode('utf-8', 'ignore') for e in errors]
         return_str = '\n'.join(returned)
-        self._send_reply('{} {}'.format(username, return_str), status)
+        self._send_reply('@{} {}'.format(username, return_str), status)
 
     def _tio(self, language, code, user_input=''):
         request = [{'command': 'V', 'payload': {'lang': [language]}},
