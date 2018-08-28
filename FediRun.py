@@ -20,7 +20,7 @@ class FediRun(PineappleBot):
         language = lines[0].strip()
 
         if not language:
-            self._send_reply('The language name *must* be on the first line of your toot', status)
+            self._send_reply('@{} the language name *must* be on the first line of your toot'.format(username), status)
             return
 
         code = '\n'.join(lines[1:])
