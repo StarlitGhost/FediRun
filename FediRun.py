@@ -78,7 +78,7 @@ class FediRun(PineappleBot):
 
     def start(self):
         self.languages = self._fetch_languages()
-        self.languages_friendly = {d['name'].lower(): l for l, d in self.languages}
+        self.languages_friendly = {d['name'].lower(): l for l, d in self.languages.items()}
 
     def _fetch_languages(self):
         self.log("_fetch_languages", "Loading language list from TryItOnline...")
