@@ -52,14 +52,18 @@ class FediRun(PineappleBot):
         # send the code off to tio.run
         returned, errors = self._tio(language, code)
 
-        response = '@{} {}'.format(username, returned)
+        response = returned
         # grab and check the exit code
         if int(errors.splitlines()[-1][len("Exit code: ")-1:]) != 0:
             self.log('respond', '@{} got a non-zero exit code, tacking on error output'.format(username, language))
             # add error output if the exit code was non-zero
             response += '\nError: {}'.format(errors)
 
-        self._send_reply(response, status)
+        # if the response is too long, paste.ee it instead
+        if len(response) + len('@{} '.format(username)) > 500:
+            response = self._paste_ee(response, 'TIO {} output for @{}'.format(user_language, username), 0)
+
+        self._send_reply('@{} {}'.format(username, response), status)
 
     def _tio(self, language, code, user_input=''):
         # build our request dictionary
@@ -121,6 +125,22 @@ class FediRun(PineappleBot):
         close_matches = [word for (diff, word) in similarities if diff <= threshold]
         top_n = close_matches[:num_matches]
         return top_n
+
+    def _paste_ee(self, data: str, description: str, expire: int, raw: bool = True) -> str:
+        values = {"key": "public",
+                  "description": description,
+                  "paste": data,
+                  "expiration": expire,
+                  "format": "json"}
+        result = requests.post("http://paste.ee/api", data=values, timeout=10)
+        if result:
+            j = result.json()
+            if j["status"] == "success":
+                link_type = "raw" if raw else "link"
+                return j["paste"][link_type]
+            elif j["status"] == "error":
+                return ("an error occurred while posting to paste.ee, code: {}, reason: {}"
+                        .format(j["errorcode"], j["error"]))
 
     def _send_reply(self, response, original):
         self.mastodon.status_post(response,
