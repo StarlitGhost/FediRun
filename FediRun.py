@@ -22,23 +22,29 @@ class FediRun(PineappleBot):
         lines = soup.text.splitlines()
 
         # the language must be on the first line of the toot
-        language = lines[0].strip()
-        if not language:
+        user_language = lines[0].strip()
+        if not user_language:
+            self.log('respond', '@{} left off the language'.format(username))
             self._send_reply('@{} the language name *must* be on the first line of your toot'.format(username), status)
             return
+        language = user_language.lower()
         # check if tio.run accepts this language
-        if language.lower() in self.languages_friendly:
+        if language in self.languages_friendly:
             # convert friendly language name to api language name
-            language = self.languages_friendly[language.lower()]
-        if language.lower() not in self.languages:
-            # no match; fetch a list of close language name matches
-            lang_list = self._closest_matches(language, self.languages_friendly.keys(), 10, 0.8)
+            language = self.languages_friendly[language]
+        if language not in self.languages:
+            self.log('respond', '@{} requested unrecognized language {!r}'.format(username, language))
+
+            # no match; return a list of close language name matches
+            lang_list = self._closest_matches(user_language.lower(), self.languages_friendly.keys(), 10, 0.8)
             lang_string = "\n".join(lang_list)
-            self._send_reply('@{} language {!r} is unknown on https://tio.run\n'.format(username, language) +
+            self._send_reply('@{} language {!r} is unknown on https://tio.run\n'.format(username, user_language) +
                              'Perhaps you wanted one of these?\n\n' +
                              '{}'.format(lang_string),
                              status)
             return
+
+        self.log('respond', '@{} requested to execute some {!r}'.format(username, language))
 
         # the rest of the toot is treated as code
         code = '\n'.join(lines[1:])
@@ -49,6 +55,7 @@ class FediRun(PineappleBot):
         response = '@{} {}'.format(username, returned)
         # grab and check the exit code
         if int(errors.splitlines()[-1][len("Exit code: ")-1:]) != 0:
+            self.log('respond', '@{} got a non-zero exit code, tacking on error output'.format(username, language))
             # add error output if the exit code was non-zero
             response += '\nError: {}'.format(errors)
 
@@ -99,9 +106,12 @@ class FediRun(PineappleBot):
         self.languages_friendly = {d['name'].lower(): l for l, d in self.languages.items()}
 
     def _fetch_languages(self):
-        self.log("_fetch_languages", "Loading language list from TryItOnline...")
         lang_url = "https://raw.githubusercontent.com/TryItOnline/tryitonline/master/usr/share/tio.run/languages.json"
         response = requests.get(lang_url)
+        if response:
+            self.log("_fetch_languages", "Loaded language list from TryItOnline")
+        else:
+            self.log("_fetch_languages", "Failed to load language list from TryItOnline")
         return response.json()
 
     def _closest_matches(self, search: str, word_list: List[str], num_matches: int, threshold: float) -> List[str]:
