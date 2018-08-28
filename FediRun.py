@@ -18,6 +18,11 @@ class FediRun(PineappleBot):
         lines = soup.text.splitlines()
 
         language = lines[0].strip()
+
+        if not language:
+            self._send_reply('The language name *must* be on the first line of your toot', status)
+            return
+
         code = '\n'.join(lines[1:])
 
         returned, errors = self._tio(language, code)
