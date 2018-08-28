@@ -1,0 +1,4 @@
+ananas==1.0.0b17
+beautifulsoup4==4.6.3
+lxml==4.2.4
+requests==2.19.1
