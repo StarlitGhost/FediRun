@@ -61,7 +61,8 @@ class FediRun(PineappleBot):
 
         # if the response is too long, paste.ee it instead
         if len(response) + len('@{} '.format(username)) > 500:
-            response = self._paste_ee(response, 'TIO {} output for @{}'.format(user_language, username), 0)
+            paste = self._paste_ee(response, 'TIO {} output for @{}'.format(user_language, username), 0)
+            response = 'output too long, pasted here: {}'.format(paste)
 
         self._send_reply('@{} {}'.format(username, response), status)
 
@@ -126,7 +127,7 @@ class FediRun(PineappleBot):
         top_n = close_matches[:num_matches]
         return top_n
 
-    def _paste_ee(self, data: str, description: str, expire: int, raw: bool = True) -> str:
+    def _paste_ee(self, data: str, description: str, expire: int, raw: bool = False) -> str:
         values = {"key": "public",
                   "description": description,
                   "paste": data,
