@@ -12,3 +12,6 @@ domain = mastodon.instance
 And then run it with `ananas --interactive config.cfg` to set up client secrets and so forth.
 
 See [ananas](https://github.com/chr-1x/ananas) for more details on the bot framework.
+
+# Contributing
+Please do! Pull requests are welcome
