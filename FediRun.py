@@ -12,10 +12,12 @@ class FediRun(PineappleBot):
     def respond(self, status, user):
         username = user["acct"]
 
-        # decode the toot into raw text
+        ## decode the toot into raw text
         soup = BeautifulSoup(status["content"], "lxml")
         # strip mentions
-        [mention.extract() for mention in soup.find_all(class_="h-card")]
+        for mention in status["mentions"]:
+            for a in soup.find_all(href=mention["url"]):
+                a.extract()
         # replace <br /> with newlines
         [br.replace_with('\n') for br in soup.find_all("br")]
 
