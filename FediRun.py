@@ -12,16 +12,21 @@ class FediRun(PineappleBot):
     def respond(self, status, user):
         username = user["acct"]
 
-        ## decode the toot into raw text
+        # decode the toot into raw text
         soup = BeautifulSoup(status["content"], "lxml")
-        # strip mentions
+        #  strip mentions
         for mention in status["mentions"]:
             for a in soup.find_all(href=mention["url"]):
                 a.extract()
-        # replace <br /> with newlines
-        [br.replace_with('\n') for br in soup.find_all("br")]
-
-        lines = soup.text.splitlines()
+        #  put all the lines in a list
+        #   replace <br /> tags with a newline
+        for br in soup.find_all("br"):
+            br.replace_with('\n')
+        #   then replace consecutive <p> tags with a double newline
+        lines = [line.text for line in soup.find_all('p')]
+        lines = '\n\n'.join(lines)
+        #   finally split all the lines up at the newlines we just added
+        lines = lines.splitlines()
 
         # the language must be on the first line of the toot
         user_language = lines[0].strip()
@@ -111,6 +116,35 @@ class FediRun(PineappleBot):
         self.languages = self._fetch_languages()
         # build a mapping of friendly language names to api language names
         self.languages_friendly = {d['name'].lower(): l for l, d in self.languages.items()}
+
+        # add some defaults for languages with multiple options or nonobvious names
+        self.languages_friendly['ada'] = 'ada-gnat'
+        self.languages_friendly['algol'] = 'algol68g'
+        self.languages_friendly['apl'] = 'apl-dyalog'
+        self.languages_friendly['c'] = 'c-clang'
+        self.languages_friendly['c++'] = 'cpp-clang'
+        self.languages_friendly['cpp'] = 'cpp-clang'
+        self.languages_friendly['c#'] = 'cs-core'
+        self.languages_friendly['cobol'] = 'cobol-gnu'
+        self.languages_friendly['erlang'] = 'erlang-escript'
+        self.languages_friendly['forth'] = 'forth-gforth'
+        self.languages_friendly['fortran'] = 'fortran-gfortran'
+        self.languages_friendly['f#'] = 'fs-core'
+        self.languages_friendly['java'] = 'java-jdk'
+        self.languages_friendly['javascript'] = 'javascript-nodejs'
+        self.languages_friendly['js'] = 'javascript-nodejs'
+        self.languages_friendly['lisp'] = 'clisp'
+        self.languages_friendly['objective-c'] = 'objective-c-clang'
+        self.languages_friendly['pascal'] = 'pascal-fpc'
+        self.languages_friendly['postscript'] = 'postscript-xpost'
+        self.languages_friendly['prolog'] = 'prolog-swi'
+        self.languages_friendly['python'] = 'python3'
+        self.languages_friendly['scheme'] = 'scheme-chicken'
+        self.languages_friendly['vb'] = 'vb-core'
+        self.languages_friendly['vb.net'] = 'vb-core'
+        self.languages_friendly['visual basic'] = 'vb-core'
+        self.languages_friendly['visual basic .net'] = 'vb-core'
+
 
     def _fetch_languages(self):
         lang_url = "https://raw.githubusercontent.com/TryItOnline/tryitonline/master/usr/share/tio.run/languages.json"
