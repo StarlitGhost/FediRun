@@ -14,11 +14,21 @@ class FediRun(PineappleBot):
 
         # decode the toot into raw text
         soup = BeautifulSoup(status["content"], "lxml")
+        self.log("raw_toot", soup)
         #  strip mentions
         for mention in status["mentions"]:
             for a in soup.find_all(href=mention["url"]):
                 a.extract()
         #  put all the lines in a list
+        #   if there's no p tag, add one wrapping everything
+        if not soup.find_all('p'):
+            body_children = list(soup.body.children)
+            wrapper_p = soup.new_tag('p')
+            soup.body.clear()
+            soup.body.append(wrapper_p)
+            for child in body_children:
+                wrapper_p.append(child)
+            self.log("wrapped_toot", soup)
         #   replace <br /> tags with a newline
         for br in soup.find_all("br"):
             br.replace_with('\n')
@@ -144,7 +154,6 @@ class FediRun(PineappleBot):
         self.languages_friendly['vb.net'] = 'vb-core'
         self.languages_friendly['visual basic'] = 'vb-core'
         self.languages_friendly['visual basic .net'] = 'vb-core'
-
 
     def _fetch_languages(self):
         lang_url = "https://raw.githubusercontent.com/TryItOnline/tryitonline/master/usr/share/tio.run/languages.json"
