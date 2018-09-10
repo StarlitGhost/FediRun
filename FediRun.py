@@ -38,6 +38,10 @@ class FediRun(PineappleBot):
         #   finally split all the lines up at the newlines we just added
         lines = lines.splitlines()
 
+        # only one line, abort as there is no code to run
+        if len(lines) == 1:
+            return
+
         # the language must be on the first line of the toot
         user_language = lines[0].strip()
         if not user_language:
@@ -54,6 +58,9 @@ class FediRun(PineappleBot):
 
             # no match; return a list of close language name matches
             lang_list = self._closest_matches(user_language.lower(), self.languages_friendly.keys(), 10, 0.8)
+            # no close matches found, abort, it's probably just someone talking about the bot
+            if not lang_list:
+                return
             lang_string = "\n".join(lang_list)
             self._send_reply('@{} language {!r} is unknown on https://tio.run\n'.format(username, user_language) +
                              'Perhaps you wanted one of these?\n\n' +
