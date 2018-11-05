@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  fedirun:
+    restart: unless-stopped
+    container_name: fedirun
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+# vim: tabstop=2 shiftwidth=2 expandtab
