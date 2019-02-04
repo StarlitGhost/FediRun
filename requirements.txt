@@ -1,6 +1,6 @@
 ananas==1.0.0b18
 beautifulsoup4==4.6.3
 lxml==4.2.5
-numpy==1.15.3
+numpy==1.16.1
 pyxDamerauLevenshtein==1.5
 requests==2.20.0
