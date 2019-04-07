@@ -1,4 +1,4 @@
-# FediRun [![Build Status](https://travis-ci.org/StarlitGhost/FediRun.svg?branch=master)](https://travis-ci.org/StarlitGhost/FediRun) [![Updates](https://pyup.io/repos/github/StarlitGhost/FediRun/shield.svg)](https://pyup.io/repos/github/StarlitGhost/FediRun/) 
+# FediRun [![Build Status](https://travis-ci.org/StarlitGhost/FediRun.svg?branch=master)](https://travis-ci.org/StarlitGhost/FediRun) [![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/starlitghost/fedirun.svg)](https://hub.docker.com/r/starlitghost/fedirun) [![Updates](https://pyup.io/repos/github/StarlitGhost/FediRun/shield.svg)](https://pyup.io/repos/github/StarlitGhost/FediRun/) 
 A Mastodon bot that runs code in your toots using [tio.run](https://tio.run).
 
 To use, create a config file like this:
