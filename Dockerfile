@@ -19,6 +19,5 @@ RUN apk add libffi libxml2 libxslt musl openssl
 COPY --from=build /usr/local /usr/local
 COPY --from=build /app /app
 WORKDIR /app
-COPY config.cfg /app
 ENV PYTHONUNBUFFERED=1
-ENTRYPOINT ananas config.cfg
+ENTRYPOINT ananas config/config.cfg

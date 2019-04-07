@@ -7,5 +7,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./config:/app/config
 
 # vim: tabstop=2 shiftwidth=2 expandtab
