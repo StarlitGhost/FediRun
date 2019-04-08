@@ -2,12 +2,13 @@ version: '3'
 
 services:
   fedirun:
-    restart: unless-stopped
+    image: starlitghost/fedirun
     container_name: fedirun
     build:
       context: .
       dockerfile: Dockerfile
     volumes:
       - ./config:/app/config
+    restart: unless-stopped
 
 # vim: tabstop=2 shiftwidth=2 expandtab
